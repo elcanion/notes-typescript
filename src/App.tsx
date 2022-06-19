@@ -4,48 +4,60 @@ import NotesList from "./components/NotesList/NotesList";
 import Header from "./components/Header/Header";
 import SearchBar from "./components/SearchBar/SearchBar";
 import * as S from "./App.styles"
+import { app } from "./firebase.config";
+import { addDoc, collection, deleteDoc, doc, DocumentReference, getDocs, getFirestore, Timestamp } from "firebase/firestore";
 
 const App = () => {
   const [notes, setNotes] = useState<Note[]>([
-    {
-      id: 1,
-      text: "This is my first note!",
-      date: "15/04/2021",
-    },
-    {
-      id: 2,
-      text: "ahusdhaushduahsduahsudhausdhaushduashduahsduahsudh!",
-      date: "15/04/2021",
-    },
   ]);
 
   const [searchText, setSearchText] = useState("");
 
+  const db = getFirestore(app);
+
   useEffect(() => {
-    const savedNotes = JSON.parse(localStorage.getItem('react-notes-app-data') || "{}");
-    if (savedNotes) {
-      setNotes(savedNotes);
-    }
+    query();
   }, [])
 
-  useEffect(() => {
-    localStorage.setItem('react-notes-app-data', JSON.stringify(notes))
-  }, [notes])
 
-  const addNote = (text: string) => {
-    const date = new Date();
-    const newNote = {
-      id: notes.length,
-      text: text,
-      date: date.toLocaleDateString()
-    }
-    const newNotes = [...notes, newNote];
-    setNotes(newNotes);
+  async function query() {
+    var newNotes : Note[] = [];
+    const querySnapshot = await getDocs(collection(db, "notes"));
+    querySnapshot.forEach((doc) => {
+      newNotes.push({
+        id: doc.id,
+        text: doc.data().text,
+        createdAt: doc.data().createdAt,
+      });
+      setNotes(newNotes);
+    });
   }
 
-  const deleteNote = (id: number) => {
+  const addNote = async (text: string) => {
+    const timestamp = Timestamp.now();
+    try {
+      const docRef = await addDoc(collection(db, "notes"), {
+        text: text,
+        createdAt: timestamp,
+      })
+
+      const newNote = {
+        id: docRef.id,
+        text: text,
+        createdAt: timestamp
+      }
+      const newNotes = [...notes, newNote];
+      setNotes(newNotes);
+    } catch (e) {
+      console.log("Error adding document: ", e);
+    }
+
+  }
+
+  const deleteNote = async (id: string) => {
     const newNotes = notes.filter((note) => note.id !== id);
     setNotes(newNotes);
+    await deleteDoc(doc(db, "notes", id));
   }
 
   return (

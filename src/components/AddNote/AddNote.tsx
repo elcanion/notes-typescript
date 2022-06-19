@@ -28,7 +28,7 @@ const AddNote = ({handleAddNote}: Props) => {
             <S.AddNoteTextArea
                 rows={8}
                 cols={10}
-                placeholder="Type to add a note..."
+                placeholder="Type something and click Save to add a note..."
                 value={noteText}
                 onChange={handleChange}
                 ></S.AddNoteTextArea>

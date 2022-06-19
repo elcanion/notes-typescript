@@ -6,7 +6,7 @@ import * as S from "./styles"
 type Props = {
     notes: Note[],
     handleAddNote: (text: string) => void;
-    handleDeleteNote: (id: number) => void;
+    handleDeleteNote: (id: string) => void;
 }
 
 const NotesList = ({ notes, handleAddNote, handleDeleteNote }: Props) => {
